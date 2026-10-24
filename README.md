@@ -1,13 +1,13 @@
-# AUDA · Threat Hunting para el Hackathon Alaris & UNIS
+# AUDA · Automatización para SOC
 
 ## 1. Qué es
-AUDA es una herramienta de escritorio simple que toma una noticia de seguridad reciente, analiza qué sistemas de una empresa podrían verse afectados y genera un reporte SOC con recomendaciones concretas. Todo funciona localmente con Python y Tkinter, sin necesidad de instalar paquetes externos ni conexión a internet.
+AUDA es una herramienta de escritorio que automatiza el análisis de vulnerabilidads recientes para el SOC. Toma una noticia o CVE reciente, compara con el inventario de sistemas de la empresa y genera un boletín con los equipos en riesgo, acciones inmediatas y recomendaciones para mantener el SOC actualizado.
 
 ## 2. Problema que buscamos resolver
-Muchas empresas en Guatemala y la región operan con sistemas desactualizados (Windows 7, Ubuntu Server viejo, Fedora antiguo) y no cuentan con un SOC que les avise cuando sale una nueva vulnerabilidad o campaña de malware que les afecte directamente. Los analistas reciben miles de alertas genéricas pero no saben cuál aplica a su entorno específico.
+Los SOC reciben cientos de alertas y noticias de vulnerabilidads pero no tienen forma rápida de saber cuáles afectan a sus propios sistemas. Los analistas pierden tiempo revisando manualmente si un CVE nuevo impacta su entorno, especialmente en empresas con sistemas legacy (Windows viejo, Ubuntu Server desactualizado, etc.).
 
 ## 3. Cómo se va a solucionar
-El usuario pega una noticia de seguridad (o usa la de ejemplo incluida). El programa actúa como un agente: extrae el tipo de amenaza, el vector de ataque y los sistemas afectados, los compara con un inventario de equipos legacy y genera un reporte HTML bonito con el gap detectado, la acción inmediata y las recomendaciones para el SOC.
+El usuario ingresa una noticia de vulnerabilidad (o usa la de ejemplo). El agente de AUDA extrae el software afectado, lo cruza con el inventario de la empresa y genera un boletín HTML con: sistemas en riesgo, acciones inmediatas, acciones a corto plazo y recomendación para el SOC. Todo en segundos, sin conexión a internet y sin herramientas complejas.
 
 ## 4. Por qué es importante nuestra solución
-Porque convierte información dispersa de internet en una acción concreta para el analista de seguridad. En lugar de revisar cientos de noticias manualmente, el SOC obtiene un reporte claro y visual que dice: "esta noticia de ayer afecta a tu servidor Windows 7 con Adobe Reader viejo, haz esto ahora". Eso reduce el tiempo de respuesta y ayuda a empresas que no pueden pagar un SIEM caro.
+Porque automatiza un proceso manual y lento del SOC: mantenerse al día con las últimas vulnerabilidads y saber inmediatamente qué sistemas de la empresa están expuestos. Esto reduce el tiempo de respuesta, permite parchear antes de ser explotado y da al SOC una herramienta ligera y gratuita para operar en entornos con recursos limitados.

@@ -1,93 +1,93 @@
 """
 Módulo: analyzer.py
-Función: Agente simple que toma una noticia de seguridad y genera un JSON de gap.
-Entrada: diccionario con noticia (titulo, texto, tipo_amenaza, severidad)
-Salida: diccionario con gap detectado y recomendaciones para el SOC
+Función: Agente de automatización para SOC.
+Toma una noticia/vulnerabilidad reciente y genera un boletín estructurado
+con el impacto en el entorno de la empresa y acciones inmediatas.
 """
 
-def analizar_noticia(noticia):
+import json
+from datetime import datetime
+
+
+def analizar_amenaza(noticia, inventario):
     """
-    Recibe una noticia y devuelve un gap estructurado con recomendaciones SOC.
+    Recibe una noticia de vulnerabilidad y el inventario de la empresa.
+    Devuelve un boletín SOC con gaps, impacto y acciones.
     """
-    texto = (noticia.get("texto", "") + " " + noticia.get("titulo", "")).lower()
+    texto = (noticia.get("descripcion", "") + " " + noticia.get("titulo", "")).lower()
     tipo = noticia.get("tipo_amenaza", "desconocida")
     severidad = noticia.get("severidad", "media")
+    software_afectado = noticia.get("software_afectado", [])
 
-    # Extraer palabras clave simples para determinar el vector
-    vector = "desconocido"
-    if "pdf" in texto:
-        vector = "archivo_adjunto_pdf"
-    elif "currículum" in texto or "curriculum" in texto or "word" in texto:
-        vector = "archivo_adjunto_documento"
-    elif "ssh" in texto or "fuerza bruta" in texto:
-        vector = "acceso_remoto_ssh"
-    elif "imagen" in texto or "png" in texto or "jpg" in texto:
-        vector = "archivo_imagen"
-    elif "vulnerabilidad" in texto or "cve" in texto:
-        vector = "vulnerabilidad_sistema"
+    # Buscar qué sistemas de la empresa están en riesgo
+    sistemas_en_riesgo = []
+    for sistema in inventario.get("sistemas", []):
+        software_sistema = [s.lower() for s in sistema.get("software_instalado", [])]
+        for sw in software_afectado:
+            if sw.lower() in software_sistema:
+                sistemas_en_riesgo.append({
+                    "nombre": sistema["nombre"],
+                    "sistema_operativo": sistema["sistema_operativo"],
+                    "software_coincidente": sw,
+                    "rol": sistema.get("rol", ""),
+                })
+                break
 
-    # Recomendaciones SOC según el tipo
-    recomendaciones = _generar_recomendaciones(tipo, vector)
+    # Generar acciones según severidad y tipo
+    acciones = _generar_acciones(tipo, severidad, sistemas_en_riesgo)
 
-    gap = {
-        "fecha_analisis": "2026-10-24",
+    boletin = {
+        "fecha_generacion": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "noticia_titulo": noticia.get("titulo", ""),
         "noticia_fuente": noticia.get("fuente", ""),
         "tipo_amenaza": tipo,
         "severidad": severidad,
-        "vector_identificado": vector,
-        "gap_detectado": f"La empresa podría ser vulnerable a {tipo} vía {vector} si no aplica controles.",
-        "recomendaciones_soc": recomendaciones,
-        "accion_inmediata": _accion_inmediata(tipo),
+        "vector": noticia.get("vector", ""),
+        "iocs": noticia.get("iocs", []),
+        "sistemas_en_riesgo": sistemas_en_riesgo,
+        "total_sistemas_afectados": len(sistemas_en_riesgo),
+        "acciones_inmediatas": acciones["inmediatas"],
+        "acciones_corto_plazo": acciones["corto_plazo"],
+        "recomendacion_soc": acciones["recomendacion"],
     }
 
-    return gap
+    return boletin
 
 
-def _generar_recomendaciones(tipo, vector):
-    base = [
-        "Monitorear alertas relacionadas con este tipo de amenaza en el SIEM.",
-        "Capacitar al personal para identificar archivos sospechosos.",
-    ]
+def _generar_acciones(tipo, severidad, sistemas_en_riesgo):
+    inmediatas = []
+    corto_plazo = []
+    recomendacion = ""
 
-    if tipo == "malware":
-        base += [
-            "Actualizar endpoints y software afectado inmediatamente.",
-            "Bloquear extensiones de archivo no necesarias en el correo corporativo.",
-            "Ejecutar escaneo de malware en equipos que hayan abierto adjuntos recientes.",
-        ]
-    elif tipo == "exploit":
-        base += [
-            "Aplicar parches de seguridad críticos en todos los servidores y estaciones.",
-            "Deshabilitar macros en documentos de Office por política de grupo.",
-            "Revisar exposición de servicios en internet.",
-        ]
-    elif tipo == "esteganografia":
-        base += [
-            "Bloquear descarga de imágenes desde dominios no verificados.",
-            "Implementar análisis de archivos entrantes en el proxy corporativo.",
-        ]
-    elif tipo == "vulnerabilidad":
-        base += [
-            "Inventariar versiones de software y sistemas operativos en uso.",
-            "Priorizar parcheo de sistemas expuestos a internet.",
-        ]
+    if severidad == "critica":
+        inmediatas.append("Aislar sistemas afectados de la red si es posible.")
+        inmediatas.append("Aplicar parche de emergencia o actualizar software vulnerable.")
+        corto_plazo.append("Revisar logs de los últimos 30 días en busca de explotación.")
+        corto_plazo.append("Implementar reglas de WAF/IDS para bloquear explotación conocida.")
+        recomendacion = "Tratar como prioridad crítica. El SOC debe monitorear activamente explotación en tiempo real."
+    elif severidad == "alta":
+        inmediatas.append("Evaluar exposición de los sistemas afectados.")
+        inmediatas.append("Programar parcheo en la próxima ventana de mantenimiento.")
+        corto_plazo.append("Validar parche en entorno de prueba antes de producción.")
+        recomendacion = "Priorizar parcheo en los próximos 7 días."
+    else:
+        inmediatas.append("Documentar la vulnerabilidad en el inventario de riesgos.")
+        corto_plazo.append("Incluir en ciclo normal de parcheo.")
+        recomendacion = "Monitorear y parchear en ciclo regular."
 
-    return base
+    if sistemas_en_riesgo:
+        inmediatas.insert(0, f"Notificar a los dueños de {len(sistemas_en_riesgo)} sistema(s) afectado(s).")
 
-
-def _accion_inmediata(tipo):
-    acciones = {
-        "malware": "Aislar equipos sospechosos y actualizar antivirus/EDR.",
-        "exploit": "Aplicar parche de seguridad crítico lo antes posible.",
-        "esteganografia": "Bloquear descarga de imágenes no verificadas en el firewall.",
-        "vulnerabilidad": "Desconectar sistemas vulnerables hasta aplicar parche.",
+    return {
+        "inmediatas": inmediatas,
+        "corto_plazo": corto_plazo,
+        "recomendacion": recomendacion,
     }
-    return acciones.get(tipo, "Revisar la noticia y aplicar controles preventivos según corresponda.")
 
 if __name__ == "__main__":
-    import json
     with open("../data/noticia_ejemplo.json", "r", encoding="utf-8") as f:
         noticia = json.load(f)
-    gap = analizar_noticia(noticia)
-    print(json.dumps(gap, indent=2, ensure_ascii=False))
+    with open("../data/inventario_empresa.json", "r", encoding="utf-8") as f:
+        inventario = json.load(f)
+    boletin = analizar_amenaza(noticia, inventario)
+    print(json.dumps(boletin, indent=2, ensure_ascii=False))

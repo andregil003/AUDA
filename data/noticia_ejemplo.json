@@ -1,8 +1,15 @@
 {
-  "titulo": "Nueva campaña de malware distribuido vía PDFs maliciosos afecta a empresas en América Latina",
+  "titulo": "CVE-2026-44228: Nueva vulnerabilidad crítica en Apache Log4j permite ejecución remota de código",
   "fecha": "2026-10-23",
-  "fuente": "BleepingComputer",
-  "texto": "Investigadores de seguridad han detectado una campaña activa de phishing que utiliza archivos PDF con código embebido para instalar ransomware en sistemas Windows sin parchear. Los atacantes envían correos con supuestas facturas y currículums que, al abrirse, ejecutan scripts de PowerShell ocultos. Se recomienda actualizar Adobe Reader y bloquear adjuntos PDF no confiables.",
-  "tipo_amenaza": "malware",
-  "severidad": "critica"
+  "fuente": "CISA / NVD",
+  "descripcion": "Se ha publicado una vulnerabilidad crítica en Apache Log4j que permite a un atacante ejecutar código remoto sin autenticación mediante mensajes de log specially crafted. Afecta a versiones 2.x anteriores a 2.17.1. Se reporta explotación activa en la naturaleza.",
+  "tipo_amenaza": "vulnerabilidad",
+  "severidad": "critica",
+  "vector": "red",
+  "software_afectado": ["Apache Log4j 2.x < 2.17.1"],
+  "sistemas_operativos": ["cualquier SO que ejecute Java con Log4j"],
+  "iocs": [
+    {"tipo": "CVE", "valor": "CVE-2026-44228"},
+    {"tipo": "CVSS", "valor": "9.8"}
+  ]
 }
