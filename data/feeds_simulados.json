@@ -1,0 +1,57 @@
+{
+  "fecha_generacion": "2026-10-24T08:00:00-06:00",
+  "fuente": "simulado_para_demo",
+  "reportes": [
+    {
+      "id": "RPT-001",
+      "titulo": "Nuevo malware distribuido via PDFs maliciosos",
+      "descripcion": "Campaña activa que usa archivos PDF con código embebido para instalar ransomware en sistemas Windows sin parchear.",
+      "fecha_publicacion": "2026-10-23T14:30:00-06:00",
+      "tipo_amenaza": "malware",
+      "vector": "archivo_adjunto",
+      "extensiones_afectadas": [".pdf"],
+      "software_afectado": ["Adobe Reader 11", "Adobe Acrobat Pro DC < 2021"],
+      "sistemas_operativos": ["Windows 7", "Windows 8.1", "Windows 10 < 21H2"],
+      "severidad": "critica",
+      "iocs": [
+        {"tipo": "hash_sha256", "valor": "a3f5c8e2b1d4f7a9c6e3b2d8f1a4c7e9"},
+        {"tipo": "dominio", "valor": "pdf-update-service.net"}
+      ],
+      "tecnicas_mitre": ["T1566.001", "T1204.002"]
+    },
+    {
+      "id": "RPT-002",
+      "titulo": "Exploit en currículums (CV) maliciosos para Recursos Humanos",
+      "descripcion": "Campaña dirigida a departamentos de RH que reciben currículums en Word con macros habilitadas.",
+      "fecha_publicacion": "2026-10-23T10:15:00-06:00",
+      "tipo_amenaza": "exploit",
+      "vector": "archivo_adjunto",
+      "extensiones_afectadas": [".doc", ".docx", ".rtf"],
+      "software_afectado": ["Microsoft Office 2010", "Microsoft Office 2013"],
+      "sistemas_operativos": ["Windows 7", "Windows Server 2008 R2"],
+      "severidad": "alta",
+      "iocs": [
+        {"tipo": "hash_sha256", "valor": "b7e2d4f6a8c1b3d5e7f9a2c4b6d8f0a1"},
+        {"tipo": "dominio", "valor": "cv-templates-free.com"}
+      ],
+      "tecnicas_mitre": ["T1566.001", "T1059.005"]
+    },
+    {
+      "id": "RPT-003",
+      "titulo": "Código oculto en imágenes PNG (esteganografía)",
+      "descripcion": "Imágenes PNG con comandos de PowerShell ocultos mediante esteganografía.",
+      "fecha_publicacion": "2026-10-23T08:45:00-06:00",
+      "tipo_amenaza": "esteganografia",
+      "vector": "imagen",
+      "extensiones_afectadas": [".png", ".jpg", ".bmp"],
+      "software_afectado": ["Windows Photo Viewer", "IrfanView < 4.60"],
+      "sistemas_operativos": ["Windows 7", "Windows 8.1"],
+      "severidad": "media",
+      "iocs": [
+        {"tipo": "hash_sha256", "valor": "c9d1e3f5a7b2c4d6e8f0a1b3c5d7e9f1"},
+        {"tipo": "dominio", "valor": "image-cdn-free.net"}
+      ],
+      "tecnicas_mitre": ["T1027", "T1059.001"]
+    }
+  ]
+}
