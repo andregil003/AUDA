@@ -1,0 +1,17 @@
+{
+  "titulo": "Nueva campaña de malware distribuido vía PDFs maliciosos afecta a empresas en América Latina",
+  "fecha": "2026-10-22",
+  "fuente": "BleepingComputer",
+  "resumen": "Investigadores de seguridad detectaron una campaña activa que envía correos electrónicos con archivos PDF adjuntos conteniendo código embebido. Al abrir el PDF en versiones desactualizadas de Adobe Reader, se ejecuta un script de PowerShell que instala un troyano bancario y roba credenciales del navegador.",
+  "tipo_amenaza": "Malware vía archivo adjunto",
+  "vector": "Email phishing con PDF malicioso",
+  "software_afectado": ["Adobe Reader 11", "Adobe Acrobat Pro DC < 2021", "Foxit Reader < 11"],
+  "sistemas_operativos": ["Windows 7", "Windows 8.1", "Windows 10 < 21H2"],
+  "severidad": "Critica",
+  "iocs": [
+    {"tipo": "SHA256", "valor": "a3f5c8e2b1d4f7a9c6e3b2d8f1a4c7e9"},
+    {"tipo": "Dominio", "valor": "pdf-update-service.net"},
+    {"tipo": "IP", "valor": "185.220.101.44"}
+  ],
+  "tecnicas_mitre": ["T1566.001 (Phishing con archivo adjunto)", "T1204.002 (Ejecución maliciosa del usuario)"]
+}

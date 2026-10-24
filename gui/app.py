@@ -1,206 +1,180 @@
 """
 Módulo: gui/app.py
-Responsable: andreGil (integración)
-Función: Interfaz gráfica simple, tema negro, sin terminal.
-Requisitos: Python (Tkinter viene incluido).
+Interfaz simple para demo de hackathon.
+Flujo: pegar noticia → analizar (agente) → ver reporte SOC bonito.
 """
 
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import messagebox, scrolledtext
 import webbrowser
 import os
 import sys
 import json
-from datetime import datetime
 
-# Agregar src al path para importar módulos
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "src"))
 
-from extractor import extraer_iocs
-from correlator import detectar_gaps
-from report_generator import generar_reporte
-from historial_manager import listar_escaneos
+from analyzer import analizar_noticia
+from report_generator import generar_reporte_html
 
-# Rutas absolutas basadas en la ubicación de este archivo
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_DIR = os.path.dirname(BASE_DIR)
-DATA_FEEDS = os.path.join(PROJECT_DIR, "data", "feeds_simulados.json")
-DATA_INVENTARIO = os.path.join(PROJECT_DIR, "data", "inventario_empresa.json")
-HISTORIAL_DIR = os.path.join(PROJECT_DIR, "historial")
+DATA_NOTICIA = os.path.join(PROJECT_DIR, "data", "noticia_ejemplo.json")
 
 
 class AppThreatHunting:
     def __init__(self, root):
         self.root = root
-        self.root.title("Threat Hunting - Detección de Gaps")
-        self.root.geometry("800x500")
-        self.root.configure(bg="#1a1a1a")
+        self.root.title("Threat Hunting - Demo SOC")
+        self.root.geometry("700x650")
+        self.root.configure(bg="#0f172a")
 
-        # Evitar que la ventana se cierre sola si hay error crítico
-        self.root.protocol("WM_DELETE_WINDOW", self.root.quit)
+        self.gap_actual = None
+        self.ruta_html = None
 
         self._construir_interfaz()
-        self._cargar_historial()
 
     def _construir_interfaz(self):
         # Título
-        lbl_titulo = tk.Label(
+        lbl = tk.Label(
             self.root,
-            text="Threat Hunting - Detección de Gaps",
-            bg="#1a1a1a",
+            text="🛡️ Threat Hunting - Demo SOC",
+            bg="#0f172a",
             fg="#00ff88",
-            font=("Segoe UI", 16, "bold"),
+            font=("Segoe UI", 18, "bold"),
         )
-        lbl_titulo.pack(pady=15)
+        lbl.pack(pady=15)
 
-        # Botón escanear
-        btn_escanear = tk.Button(
+        # Instrucciones
+        instr = tk.Label(
             self.root,
-            text="Escanear ahora",
-            bg="#00ff88",
-            fg="#000000",
-            font=("Segoe UI", 12, "bold"),
-            width=20,
-            command=self._ejecutar_escaneo,
-        )
-        btn_escanear.pack(pady=10)
-
-        # Etiqueta historial
-        lbl_historial = tk.Label(
-            self.root,
-            text="Historial de escaneos:",
-            bg="#1a1a1a",
-            fg="#cccccc",
+            text="Pega una noticia de seguridad o usa la de ejemplo:",
+            bg="#0f172a",
+            fg="#94a3b8",
             font=("Segoe UI", 11),
         )
-        lbl_historial.pack(pady=(20, 5))
+        instr.pack(pady=(0, 10))
 
-        # Lista de historial
-        frame_lista = tk.Frame(self.root, bg="#1a1a1a")
-        frame_lista.pack(pady=5, padx=20, fill=tk.BOTH, expand=True)
-
-        self.lista_historial = tk.Listbox(
-            frame_lista,
-            bg="#2a2a2a",
-            fg="#ffffff",
-            selectbackground="#00ff88",
-            selectforeground="#000000",
-            font=("Consolas", 10),
+        # Área de texto para la noticia
+        self.txt_noticia = scrolledtext.ScrolledText(
+            self.root,
+            width=80,
             height=10,
+            bg="#1e293b",
+            fg="#f8fafc",
+            insertbackground="#00ff88",
+            font=("Consolas", 10),
         )
-        self.lista_historial.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        self.txt_noticia.pack(pady=5, padx=20)
 
-        scrollbar = tk.Scrollbar(frame_lista, command=self.lista_historial.yview)
-        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-        self.lista_historial.config(yscrollcommand=scrollbar.set)
+        # Cargar noticia de ejemplo
+        self._cargar_ejemplo()
 
-        # Botones inferiores
-        frame_botones = tk.Frame(self.root, bg="#1a1a1a")
-        frame_botones.pack(pady=15)
+        # Botones
+        frame_btn = tk.Frame(self.root, bg="#0f172a")
+        frame_btn.pack(pady=15)
 
-        btn_ver = tk.Button(
-            frame_botones,
-            text="Ver reporte seleccionado",
-            bg="#333333",
+        btn_analizar = tk.Button(
+            frame_btn,
+            text="🔍 Analizar noticia (Agente)",
+            bg="#00ff88",
+            fg="#000000",
+            font=("Segoe UI", 11, "bold"),
+            width=25,
+            command=self._analizar,
+        )
+        btn_analizar.pack(side=tk.LEFT, padx=10)
+
+        btn_reporte = tk.Button(
+            frame_btn,
+            text="📄 Ver reporte SOC",
+            bg="#334155",
             fg="#ffffff",
-            font=("Segoe UI", 10),
+            font=("Segoe UI", 11),
+            width=20,
             command=self._ver_reporte,
+            state="disabled",
         )
-        btn_ver.pack(side=tk.LEFT, padx=10)
+        btn_reporte.pack(side=tk.LEFT, padx=10)
+        self.btn_reporte = btn_reporte
 
-        btn_salir = tk.Button(
-            frame_botones,
-            text="Salir",
-            bg="#333333",
-            fg="#ffffff",
-            font=("Segoe UI", 10),
-            command=self.root.quit,
+        # Área de resultado JSON
+        lbl_json = tk.Label(
+            self.root,
+            text="JSON generado por el agente:",
+            bg="#0f172a",
+            fg="#94a3b8",
+            font=("Segoe UI", 11),
         )
-        btn_salir.pack(side=tk.LEFT, padx=10)
+        lbl_json.pack(pady=(20, 5))
+
+        self.txt_json = scrolledtext.ScrolledText(
+            self.root,
+            width=80,
+            height=12,
+            bg="#000000",
+            fg="#00ff88",
+            insertbackground="#00ff88",
+            font=("Consolas", 10),
+        )
+        self.txt_json.pack(pady=5, padx=20)
 
         # Estado
         self.lbl_estado = tk.Label(
             self.root,
             text="Listo",
-            bg="#1a1a1a",
+            bg="#0f172a",
             fg="#888888",
             font=("Segoe UI", 9),
         )
-        self.lbl_estado.pack(pady=5)
+        self.lbl_estado.pack(pady=10)
 
-    def _ejecutar_escaneo(self):
-        self.lbl_estado.config(text="Escaneando...", fg="#00ff88")
-        self.root.update()
-
+    def _cargar_ejemplo(self):
         try:
-            # Verificar que existan los archivos de datos
-            if not os.path.exists(DATA_FEEDS):
-                raise FileNotFoundError(f"No se encontró: {DATA_FEEDS}")
-            if not os.path.exists(DATA_INVENTARIO):
-                raise FileNotFoundError(f"No se encontró: {DATA_INVENTARIO}")
+            with open(DATA_NOTICIA, "r", encoding="utf-8") as f:
+                noticia = json.load(f)
+            texto = f"{noticia['titulo']}\n{noticia['texto']}"
+            self.txt_noticia.delete("1.0", tk.END)
+            self.txt_noticia.insert("1.0", texto)
+        except Exception:
+            pass
 
-            # Cargar datos
-            with open(DATA_FEEDS, "r", encoding="utf-8") as f:
-                feeds = json.load(f)
-            with open(DATA_INVENTARIO, "r", encoding="utf-8") as f:
-                inventario = json.load(f)
-
-            # Pipeline
-            hallazgos = extraer_iocs(feeds["reportes"])
-            gaps = detectar_gaps(hallazgos, inventario)
-            metadatos = {"fecha": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
-
-            # Generar reporte
-            carpeta = generar_reporte(gaps, metadatos, HISTORIAL_DIR)
-
-            self.lbl_estado.config(
-                text=f"Escaneo completo: {len(gaps)} gaps detectados",
-                fg="#00ff88",
-            )
-            self._cargar_historial()
-            messagebox.showinfo(
-                "Éxito",
-                f"Escaneo terminado.\nGaps detectados: {len(gaps)}\n\n"
-                f"Reporte guardado en:\n{carpeta}",
-            )
-
-        except Exception as e:
-            self.lbl_estado.config(text="Error en el escaneo", fg="#ff4444")
-            messagebox.showerror(
-                "Error",
-                f"Ocurrió un error:\n\n{str(e)}\n\n"
-                f"Asegúrate de estar ejecutando desde la carpeta del proyecto.",
-            )
-
-    def _cargar_historial(self):
-        self.lista_historial.delete(0, tk.END)
-        try:
-            escaneos = listar_escaneos(HISTORIAL_DIR)
-            for e in escaneos:
-                texto = f"{e['fecha']} | {e['total_gaps']} gaps | {e['carpeta']}"
-                self.lista_historial.insert(tk.END, texto)
-        except Exception as e:
-            self.lbl_estado.config(text="Error cargando historial", fg="#ff4444")
-            messagebox.showerror("Error", f"No se pudo cargar el historial:\n{str(e)}")
-
-    def _ver_reporte(self):
-        seleccion = self.lista_historial.curselection()
-        if not seleccion:
-            messagebox.showwarning("Aviso", "Selecciona un escaneo de la lista")
+    def _analizar(self):
+        texto = self.txt_noticia.get("1.0", tk.END).strip()
+        if not texto:
+            messagebox.showwarning("Aviso", "Ingresa una noticia para analizar")
             return
 
-        indice = seleccion[0]
-        try:
-            escaneos = listar_escaneos(HISTORIAL_DIR)
-            escaneo = escaneos[indice]
-            ruta_html = escaneo["ruta_html"]
+        # Construir noticia simple desde el texto
+        noticia = {
+            "titulo": texto.split("\n")[0][:100],
+            "texto": texto,
+            "fuente": "Entrada manual",
+            "tipo_amenaza": "desconocida",
+            "severidad": "media",
+        }
 
-            if os.path.exists(ruta_html):
-                webbrowser.open(f"file://{ruta_html}")
-            else:
-                messagebox.showerror("Error", "No se encontró el archivo reporte.html")
+        try:
+            self.gap_actual = analizar_noticia(noticia)
+            self.txt_json.delete("1.0", tk.END)
+            self.txt_json.insert("1.0", json.dumps(self.gap_actual, indent=2, ensure_ascii=False))
+
+            # Generar reporte HTML
+            self.ruta_html = os.path.join(PROJECT_DIR, "reporte_soc.html")
+            generar_reporte_html(self.gap_actual, self.ruta_html)
+
+            self.btn_reporte.config(state="normal")
+            self.lbl_estado.config(text="Análisis completo - Reporte SOC generado", fg="#00ff88")
+            messagebox.showinfo("Éxito", "Agente analizó la noticia y generó el reporte SOC")
+
         except Exception as e:
-            messagebox.showerror("Error", f"No se pudo abrir el reporte:\n{str(e)}")
+            self.lbl_estado.config(text="Error en el análisis", fg="#ef4444")
+            messagebox.showerror("Error", f"No se pudo analizar:\n{str(e)}")
+
+    def _ver_reporte(self):
+        if self.ruta_html and os.path.exists(self.ruta_html):
+            webbrowser.open(f"file://{self.ruta_html}")
+        else:
+            messagebox.showwarning("Aviso", "Primero analiza una noticia para generar el reporte")
 
 
 if __name__ == "__main__":
@@ -209,7 +183,6 @@ if __name__ == "__main__":
         app = AppThreatHunting(root)
         root.mainloop()
     except Exception as e:
-        # Si falla algo crítico, mostrar consola de error en Windows
         import traceback
         traceback.print_exc()
         input("\nPresiona Enter para salir...")

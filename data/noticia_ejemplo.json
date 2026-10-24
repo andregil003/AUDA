@@ -1,0 +1,8 @@
+{
+  "titulo": "Nueva campaña de malware distribuido vía PDFs maliciosos afecta a empresas en América Latina",
+  "fecha": "2026-10-23",
+  "fuente": "BleepingComputer",
+  "texto": "Investigadores de seguridad han detectado una campaña activa de phishing que utiliza archivos PDF con código embebido para instalar ransomware en sistemas Windows sin parchear. Los atacantes envían correos con supuestas facturas y currículums que, al abrirse, ejecutan scripts de PowerShell ocultos. Se recomienda actualizar Adobe Reader y bloquear adjuntos PDF no confiables.",
+  "tipo_amenaza": "malware",
+  "severidad": "critica"
+}
