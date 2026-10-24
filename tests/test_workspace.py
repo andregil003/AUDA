@@ -5,6 +5,7 @@ import unittest
 from copy import deepcopy
 from http.client import HTTPConnection
 from pathlib import Path
+from unittest.mock import Mock
 from gui.server import LocalServer
 from src import workspace as w
 
@@ -87,7 +88,14 @@ class WorkspaceTests(unittest.TestCase):
 class ServerTests(unittest.TestCase):
     def test_http_flow_security_and_restart(self):
         with tempfile.TemporaryDirectory() as directory:
-            with LocalServer(directory=directory) as server:
+            saved=w.analyze([a['url'] for a in w.catalog()])
+            w.save(saved,directory)
+            service=Mock()
+            service.environment.return_value={'id':'test'}
+            service.snapshot.return_value={'estado':'pausado'}
+            service.trigger.return_value={'reporte_id':saved['id'],'ejecutando':True}
+            service.report.side_effect=lambda rid:w.load(rid,directory)
+            with LocalServer(directory=directory,service=service) as server:
                 thread = threading.Thread(target=server.serve_forever, daemon=True)
                 thread.start()
                 conn = HTTPConnection('127.0.0.1', server.server_port, timeout=5)
@@ -99,7 +107,7 @@ class ServerTests(unittest.TestCase):
                     self.assertIn(server.token, html)
                     self.assertIn("frame-ancestors 'none'", response.getheader('Content-Security-Policy'))
                     for asset in ('/app.js', '/style.css', '/api/bootstrap'):
-                        conn.request('GET', asset)
+                        conn.request('GET', asset, headers={'X-AUDA-Token':server.token})
                         response = conn.getresponse()
                         response.read()
                         self.assertEqual(response.status, 200)
@@ -109,14 +117,14 @@ class ServerTests(unittest.TestCase):
                     response = conn.getresponse()
                     report = json.loads(response.read())
                     self.assertEqual(response.status, 200)
-                    self.assertEqual(report['resumen']['expuestos'], 4)
+                    self.assertEqual(report['reporte_id'], saved['id'])
                     for overrides in ({'X-AUDA-Token':'wrong'}, {'Origin':'https://evil.example'}, {'Host':'evil.example'}):
                         conn.request('POST','/api/analyze',payload,dict(headers, **overrides))
                         response=conn.getresponse();response.read()
                         self.assertEqual(response.status,403)
-                    conn.request('GET', '/api/report/'+report['id'])
+                    conn.request('GET', '/api/report/'+saved['id'],headers=headers)
                     response=conn.getresponse()
-                    self.assertEqual(json.loads(response.read())['id'],report['id'])
+                    self.assertEqual(json.loads(response.read())['id'],saved['id'])
                     conn.request('GET', '/../../data/empresa_2026.json')
                     response=conn.getresponse();response.read()
                     self.assertEqual(response.status,404)
@@ -125,4 +133,4 @@ class ServerTests(unittest.TestCase):
                     server.shutdown()
                     thread.join(timeout=5)
             # Un servidor nuevo lee el reporte del mismo directorio.
-            self.assertEqual(w.history(directory)[0]['id'], report['id'])
+            self.assertEqual(w.history(directory)[0]['id'], saved['id'])

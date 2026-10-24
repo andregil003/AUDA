@@ -178,7 +178,8 @@ def history(directory=STORE):
         try:
             r = read(path)
             if r.get('schema') == 2:
-                result.append({k: r[k] for k in ('id', 'fecha', 'empresa', 'resumen', 'articulos')})
+                result.append({k: r[k] for k in ('id', 'fecha', 'empresa', 'resumen', 'articulos')}
+                              | {k:r[k] for k in ('host_id','origen') if k in r})
         except (ValueError, OSError, KeyError, AttributeError):
             continue
     return sorted(result, key=lambda r: r['fecha'], reverse=True)

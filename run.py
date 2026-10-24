@@ -1,6 +1,8 @@
 """python run.py abre AUDA en el navegador; los datos permanecen en esta PC."""
 import argparse
 import webbrowser
+import json
+from pathlib import Path
 from gui.server import LocalServer
 
 
@@ -13,6 +15,10 @@ def main():
         url = f'http://127.0.0.1:{server.server_port}'
         print(f'AUDA disponible en {url}', flush=True)
         print('Datos guardados en historial/workspace. Ctrl+C para detener.', flush=True)
+        runtime=Path(__file__).resolve().parent/'historial'/'runtime.json'
+        runtime.parent.mkdir(parents=True,exist_ok=True)
+        runtime.write_text(json.dumps({'url':url,'token':server.token}),encoding='utf-8')
+        server.service.start()
         if not args.no_browser:
             webbrowser.open(url)
         try:

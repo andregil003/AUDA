@@ -1,10 +1,12 @@
 """Servidor de la interfaz local; solo loopback, sin dependencias externas."""
 import json
 import secrets
+import sys
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlsplit
 from src import workspace
+from src.live import Service
 
 WEB = Path(__file__).resolve().parent / 'web'
 
@@ -12,10 +14,15 @@ WEB = Path(__file__).resolve().parent / 'web'
 class LocalServer(ThreadingHTTPServer):
     daemon_threads = True
 
-    def __init__(self, address=('127.0.0.1', 0), directory=workspace.STORE):
+    def __init__(self, address=('127.0.0.1', 0), directory=workspace.STORE, service=None):
         self.token = secrets.token_urlsafe(32)
         self.directory = directory
+        self.service = service or Service(directory)
         super().__init__(address, Handler)
+
+    def server_close(self):
+        self.service.close()
+        super().server_close()
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -50,11 +57,24 @@ class Handler(BaseHTTPRequestHandler):
                 if name == 'index.html':
                     data = data.replace(b'__TOKEN__', self.server.token.encode())
                 return self.reply(200, data, kind)
+            if path.startswith('/api/') and self.headers.get('X-AUDA-Token') != self.server.token:
+                return self.reply(403, {'error': 'Se requiere el token local de AUDA.'})
             if path == '/api/bootstrap':
-                return self.reply(200, {'catalogo': workspace.catalog(), 'inventario': workspace.inventory(),
-                                        'historial': workspace.history(self.server.directory)})
+                host=self.server.service.environment()
+                return self.reply(200, {'entorno':host,'monitor':self.server.service.snapshot(),
+                                        'historial':[r for r in workspace.history(self.server.directory) if r.get('host_id')==host['id']],
+                                        'agentes':{'command':sys.executable,'args':[str(workspace.ROOT/'agent.py'),'--mcp']}})
+            if path == '/api/environment':
+                return self.reply(200,self.server.service.environment())
+            if path == '/api/status':
+                return self.reply(200,self.server.service.snapshot())
+            if path == '/api/evaluations':
+                return self.reply(200,self.server.service.evaluations())
+            if path == '/api/reports':
+                host=self.server.service.environment()
+                return self.reply(200,[r for r in workspace.history(self.server.directory) if r.get('host_id')==host['id']])
             if path.startswith('/api/report/'):
-                return self.reply(200, workspace.load(path.rsplit('/', 1)[-1], self.server.directory))
+                return self.reply(200, self.server.service.report(path.rsplit('/', 1)[-1]))
             return self.reply(404, {'error': 'No encontrado.'})
         except (FileNotFoundError, ValueError):
             self.reply(404, {'error': 'Reporte no disponible.'})
@@ -81,8 +101,14 @@ class Handler(BaseHTTPRequestHandler):
             if not isinstance(body, dict):
                 raise ValueError('Solicitud inválida.')
             if self.path == '/api/analyze':
-                report = workspace.analyze(body.get('urls'))
-                workspace.save(report, self.server.directory)
+                urls=body.get('urls')
+                if not isinstance(urls,list) or not 1<=len(urls)<=3 or not all(isinstance(u,str) and len(u)<=10000 for u in urls):
+                    raise ValueError('Pega entre una y tres URLs o CVEs.')
+                report=self.server.service.trigger(manual=urls)
+            elif self.path == '/api/review':
+                report=self.server.service.trigger()
+            elif self.path == '/api/presence':
+                report=self.server.service.presence(body.get('client'),body.get('active',True) is True)
             elif self.path == '/api/action':
                 report = workspace.update_action(body.get('report_id'), body.get('finding_id'),
                                                  body.get('action_id'), body.get('done'), self.server.directory)
