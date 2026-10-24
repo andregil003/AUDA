@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="auda-token" content="__TOKEN__">
+  <title>AUDA · Threat workspace</title><link rel="stylesheet" href="/style.css">
+  <script defer src="/app.js"></script>
+</head>
+<body>
+<div class="workspace">
+  <aside class="sidebar">
+    <a class="brand" href="#analisis" aria-label="AUDA inicio"><span class="brand-icon">a</span><span>AUDA<small>THREAT WORKSPACE</small></span></a>
+    <div class="space-switch"><span class="avatar">AT</span><span>Atlas<small>Ambiente de demostración</small></span><span class="local-dot"></span></div>
+    <p class="nav-label">WORKSPACE</p>
+    <nav aria-label="Navegación principal">
+      <button class="nav active" data-view="analisis"><span>◈</span> Análisis <kbd>1</kbd></button>
+      <button class="nav" data-view="fuentes"><span>⊞</span> Noticias verificadas <kbd>3</kbd></button>
+      <button class="nav" data-view="inventario"><span>▤</span> Dispositivos</button>
+      <button class="nav" data-view="historial"><span>◷</span> Historial local</button>
+    </nav>
+    <div class="sidebar-bottom"><span class="live-dot"></span> Solo en tu computadora<p>Fuente real. Entorno simulado.<br>Sin escaneo de red.</p><button class="quiet" id="theme-toggle" aria-label="Cambiar tema">◐ Cambiar apariencia</button></div>
+  </aside>
+  <main>
+    <header class="toolbar"><div><span class="breadcrumb">Workspace</span><span class="slash">/</span><strong id="crumb">Análisis</strong></div><div class="toolbar-right"><span class="pill neutral">DEMO LOCAL</span><button class="icon-button" id="focus-search" title="Ir a noticias · Ctrl+K" aria-label="Ir a noticias">⌕</button></div></header>
+    <div class="page">
+      <section id="view-analisis" class="view">
+        <div class="page-heading"><div><p class="eyebrow">INTELIGENCIA QUE SE CONVIERTE EN ACCIÓN</p><h1>De la noticia al equipo.</h1><p class="subtitle">Entiende el gap. Encuentra la evidencia. Decide el siguiente paso.</p></div><span class="edition">AUDA / 2026</span></div>
+        <section class="composer" aria-labelledby="composer-title">
+          <div class="composer-heading"><h2 id="composer-title"><span class="search-symbol">⌕</span> ¿Qué noticias quieres investigar?</h2><span id="url-count" class="tiny">0 / 3 noticias</span></div>
+          <label class="sr-only" for="urls">URLs de noticias, una por línea, máximo tres</label>
+          <textarea id="urls" rows="3" spellcheck="false" placeholder="Pega hasta 3 enlaces de noticias, uno por línea…"></textarea>
+          <div class="composer-footer"><div><button class="text-button" id="use-three">＋ Cargar los 3 casos de 2026</button><span class="hint">Fichas verificadas · funciona sin conexión</span></div><button class="primary" id="analyze">Generar análisis <span>↗</span></button></div>
+          <p id="input-error" class="error" role="alert" hidden></p>
+        </section>
+        <div id="results" aria-live="polite"></div>
+      </section>
+      <section id="view-fuentes" class="view" hidden></section>
+      <section id="view-inventario" class="view" hidden></section>
+      <section id="view-historial" class="view" hidden></section>
+    </div>
+    <footer class="app-footer"><span>AUDA · Local intelligence workspace</span><span>Las tareas completadas no confirman remediación ni ausencia de intrusión.</span></footer>
+  </main>
+</div>
+<dialog id="inspector" aria-labelledby="inspector-title"><div id="inspector-content"></div></dialog>
+<div class="toast" id="toast" role="status" hidden></div>
+</body>
+</html>

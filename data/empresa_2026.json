@@ -1,0 +1,14 @@
+{
+  "nombre": "Atlas · Empresa de demostración", "simulado": true,
+  "dispositivos": [
+    {"id":"siem-01","nombre":"SOC-Principal","producto":"FortiSIEM","version":"7.5.0","ip":"192.0.2.10","rol":"Correlación de eventos","responsable":"Equipo SOC","internet":true,"evidencias":[]},
+    {"id":"siem-02","nombre":"SOC-Respaldo","producto":"FortiSIEM","version":"7.5.1","ip":"192.0.2.11","rol":"Contingencia","responsable":"Equipo SOC","internet":false,"evidencias":[]},
+    {"id":"siem-03","nombre":"SOC-Sucursal","producto":"FortiSIEM","version":null,"ip":"192.0.2.12","rol":"Colector regional","responsable":"Infraestructura","internet":false,"evidencias":[]},
+    {"id":"mac-01","nombre":"Mac-Diseño","producto":"macOS Tahoe","version":"26.7.0","ip":"192.0.2.20","rol":"Diseño y archivos externos","responsable":"Soporte endpoints","internet":false,"evidencias":[]},
+    {"id":"mac-02","nombre":"Mac-Dirección","producto":"macOS Sequoia","version":"15.8.1","ip":"192.0.2.21","rol":"Dirección","responsable":"Soporte endpoints","internet":false,"evidencias":[]},
+    {"id":"ios-01","nombre":"iPhone-Comercial","producto":"iOS","version":"26.6.2","ip":"192.0.2.22","rol":"Correo y documentos","responsable":"Soporte móvil","internet":false,"evidencias":[]},
+    {"id":"fw-01","nombre":"FW-Central","producto":"FortiOS","version":"7.6.5","ip":"192.0.2.30","rol":"Firewall perimetral","responsable":"Redes","internet":true,"forticloud_sso":true,"evidencias":[{"cve":"CVE-2026-24858","tipo":"indicio","origen":"Fixture SOC ficticia; no obtenida de una red real","detalle":"Inicio SSO fuera de horario seguido de alta de un administrador sin ticket de cambio. Requiere validación del analista; no confirma atribución al CVE."}]},
+    {"id":"fw-02","nombre":"FW-Laboratorio","producto":"FortiOS","version":"7.6.5","ip":"192.0.2.31","rol":"Laboratorio","responsable":"Redes","internet":false,"forticloud_sso":false,"evidencias":[]},
+    {"id":"fw-03","nombre":"FW-Respaldo","producto":"FortiOS","version":"7.6.6","ip":"192.0.2.32","rol":"Alta disponibilidad","responsable":"Redes","internet":false,"forticloud_sso":true,"evidencias":[]}
+  ]
+}

@@ -1,0 +1,49 @@
+[
+  {
+    "id": "fortisiem", "cve": "CVE-2026-106173", "titulo": "FortiSIEM: ejecución de código sin autenticación",
+    "editor": "Cyber Security Agency of Singapore", "fecha": "2026-10-22", "consultado": "2026-10-24",
+    "url": "https://www.csa.gov.sg/alerts-and-advisories/alerts/al-2026-153/",
+    "aliases": ["https://fortiguard.fortinet.com/psirt/FG-IR-26-180", "https://www.fortiguard.com/psirt/FG-IR-26-180"],
+    "resumen": "Una falla de FortiSIEM permite ejecutar comandos remotamente. La alerta documenta una prueba de concepto pública y recomienda corregir 7.5.0.",
+    "contexto": "La regla local cubre la rama 7.5 descrita por CSA. Otras ramas de FortiSIEM quedan por verificar: el registro CVE enumera rangos adicionales.",
+    "referencias": ["https://www.cve.org/CVERecord?id=CVE-2026-106173", "https://www.cyber.gc.ca/en/alerts-advisories/fortinet-security-advisory-av26-1037"],
+    "productos": ["FortiSIEM"], "versiones": {"FortiSIEM": {"7.5": "7.5.1"}},
+    "impacto": "Ejecución no autorizada en la plataforma que centraliza eventos de seguridad.",
+    "contencion": "Restringir el acceso de red a {nombre} a los orígenes operativos autorizados mientras se programa la actualización. Validar dependencias de los colectores antes del cambio.",
+    "investigar": "Conservar logs de {nombre} y contrastarlos con registros externos del SOC. Investigar procesos o escrituras inesperados; no usar únicamente la telemetría del servidor bajo revisión.",
+    "corregir": "Actualizar {nombre} de FortiSIEM {version} a {objetivo} o una versión corregida y soportada. Confirmar respaldo y ruta de actualización antes de intervenir.",
+    "validar": "Comprobar que {nombre} informa una versión corregida, que recibe eventos de sus colectores y que conserva las restricciones de acceso aprobadas. Adjuntar evidencia al ticket."
+  },
+  {
+    "id": "apple", "cve": "CVE-2026-86950", "titulo": "Apple: archivo malicioso y ejecución en CoreGraphics",
+    "editor": "Cyber Security Agency of Singapore / Apple", "fecha": "2026-09-30", "consultado": "2026-10-24",
+    "url": "https://www.csa.gov.sg/alerts-and-advisories/alerts/al-2026-130/",
+    "aliases": ["https://support.apple.com/en-us/149226", "https://support.apple.com/en-us/149228", "https://support.apple.com/en-us/149229"],
+    "resumen": "Procesar un archivo preparado puede provocar ejecución de código. Apple reportó posibles ataques dirigidos contra versiones de iOS anteriores a iOS 27.",
+    "contexto": "Las versiones se contrastan por familia. La explotación reportada de iOS no demuestra un ataque a las Macs de este inventario.",
+    "referencias": ["https://support.apple.com/en-us/149226", "https://support.apple.com/en-us/149228", "https://support.apple.com/en-us/149229"],
+    "productos": ["macOS Tahoe", "macOS Sequoia", "iOS", "iPadOS"],
+    "versiones": {"macOS Tahoe": {"26": "26.7.1"}, "macOS Sequoia": {"15": "15.8.1"}, "iOS": {"26": "26.7.1"}, "iPadOS": {"26": "26.7.1"}},
+    "impacto": "Ejecución de código al procesar un archivo malicioso en el dispositivo.",
+    "contencion": "En {nombre}, posponer la apertura de adjuntos y archivos de origen desconocido hasta aplicar la corrección. Esta precaución no reemplaza el parche.",
+    "investigar": "Revisar con el usuario de {nombre} archivos sospechosos abiertos y alertas del agente de seguridad. Conservar el archivo sin ejecutarlo si existe un incidente; el inventario no demuestra ejecución maliciosa.",
+    "corregir": "Actualizar {nombre} desde {producto} {version} a {objetivo} o una versión soportada que incluya la corrección. Usar Actualización de software o el MDM corporativo y completar el reinicio.",
+    "validar": "Leer la versión de {nombre} después del reinicio y confirmar el cumplimiento en MDM. Registrar la versión instalada; comprobar que las aplicaciones de trabajo funcionan."
+  },
+  {
+    "id": "forticloud", "cve": "CVE-2026-24858", "titulo": "FortiCloud SSO: acceso administrativo indebido",
+    "editor": "Fortinet PSIRT", "fecha": "2026-01-22", "consultado": "2026-10-24",
+    "url": "https://www.fortinet.com/blog/psirt-blogs/analysis-of-sso-abuse-on-fortios",
+    "aliases": ["https://fortiguard.fortinet.com/psirt/FG-IR-26-060", "https://www.fortiguard.com/psirt/FG-IR-26-060", "https://www.cyber.gc.ca/en/alerts-advisories/cyber-fortinet-security-advisory-av26-059", "https://digital.nhs.uk/cyber-alerts/2026/cc-4741"],
+    "resumen": "Fortinet investigó accesos indebidos por FortiCloud SSO y creación de administradores. El artículo fue actualizado con el aviso de enero y medidas de respuesta.",
+    "contexto": "La evaluación implementada cubre FortiOS 7.6. La condición es FortiCloud SSO, no cualquier proveedor SAML. Otras ramas requieren revisión del aviso.",
+    "referencias": ["https://digital.nhs.uk/cyber-alerts/2026/cc-4741", "https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/55b9f238-fafc-11f0-8b43-d2943efe5b2f/fortios-v7.6.6-release-notes.pdf"],
+    "productos": ["FortiOS", "FortiManager", "FortiAnalyzer", "FortiProxy"],
+    "versiones": {"FortiOS": {"7.6": "7.6.6"}}, "condicion": "forticloud_sso",
+    "impacto": "Acceso administrativo y posible exposición de la configuración y credenciales del firewall.",
+    "contencion": "Deshabilitar temporalmente el inicio administrativo por FortiCloud SSO en {nombre}; comprobar antes una vía alternativa de administración. Restringir la interfaz de gestión a orígenes autorizados.",
+    "investigar": "En {nombre}, revisar logins SSO y altas de administradores no autorizadas. Correlacionar ambos eventos con cambios aprobados; si se confirman indicadores, tratar configuración y credenciales como comprometidas y escalar al fabricante.",
+    "corregir": "Actualizar {nombre} de FortiOS {version} a {objetivo} o una versión corregida soportada. Ante compromiso, auditar o recuperar configuración limpia y rotar secretos implicados bajo el procedimiento de respuesta.",
+    "validar": "Verificar versión, configuración SSO y cuentas administrativas de {nombre}. Documentar las cuentas legítimas y revisar nuevos eventos de acceso. Un parche no cierra por sí solo la investigación."
+  }
+]
