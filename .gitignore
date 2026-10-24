@@ -1,0 +1,17 @@
+# Historial generado por la aplicación (se crea al ejecutar)
+historial/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Entornos virtuales
+venv/
+env/
+.venv/
