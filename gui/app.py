@@ -6,30 +6,38 @@ Requisitos: Python (Tkinter viene incluido).
 """
 
 import tkinter as tk
-from tkinter import ttk, messagebox, filedialog
+from tkinter import messagebox
 import webbrowser
 import os
 import sys
+import json
+from datetime import datetime
 
 # Agregar src al path para importar módulos
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "src"))
 
 from extractor import extraer_iocs
 from correlator import detectar_gaps
 from report_generator import generar_reporte
-from historial_manager import listar_escaneos, leer_resumen
+from historial_manager import listar_escaneos
 
-DATA_FEEDS = os.path.join(os.path.dirname(__file__), "..", "data", "feeds_simulados.json")
-DATA_INVENTARIO = os.path.join(os.path.dirname(__file__), "..", "data", "inventario_empresa.json")
-HISTORIAL_DIR = os.path.join(os.path.dirname(__file__), "..", "historial")
+# Rutas absolutas basadas en la ubicación de este archivo
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_DIR = os.path.dirname(BASE_DIR)
+DATA_FEEDS = os.path.join(PROJECT_DIR, "data", "feeds_simulados.json")
+DATA_INVENTARIO = os.path.join(PROJECT_DIR, "data", "inventario_empresa.json")
+HISTORIAL_DIR = os.path.join(PROJECT_DIR, "historial")
 
 
 class AppThreatHunting:
     def __init__(self, root):
         self.root = root
-        self.root.title("Threat Hunting - SOC Ligero")
+        self.root.title("Threat Hunting - Detección de Gaps")
         self.root.geometry("800x500")
         self.root.configure(bg="#1a1a1a")
+
+        # Evitar que la ventana se cierre sola si hay error crítico
+        self.root.protocol("WM_DELETE_WINDOW", self.root.quit)
 
         self._construir_interfaz()
         self._cargar_historial()
@@ -125,16 +133,22 @@ class AppThreatHunting:
         self.root.update()
 
         try:
+            # Verificar que existan los archivos de datos
+            if not os.path.exists(DATA_FEEDS):
+                raise FileNotFoundError(f"No se encontró: {DATA_FEEDS}")
+            if not os.path.exists(DATA_INVENTARIO):
+                raise FileNotFoundError(f"No se encontró: {DATA_INVENTARIO}")
+
             # Cargar datos
             with open(DATA_FEEDS, "r", encoding="utf-8") as f:
-                feeds = __import__("json").load(f)
+                feeds = json.load(f)
             with open(DATA_INVENTARIO, "r", encoding="utf-8") as f:
-                inventario = __import__("json").load(f)
+                inventario = json.load(f)
 
             # Pipeline
             hallazgos = extraer_iocs(feeds["reportes"])
             gaps = detectar_gaps(hallazgos, inventario)
-            metadatos = {"fecha": __import__("datetime").datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+            metadatos = {"fecha": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 
             # Generar reporte
             carpeta = generar_reporte(gaps, metadatos, HISTORIAL_DIR)
@@ -144,18 +158,30 @@ class AppThreatHunting:
                 fg="#00ff88",
             )
             self._cargar_historial()
-            messagebox.showinfo("Éxito", f"Escaneo terminado.\nGaps detectados: {len(gaps)}")
+            messagebox.showinfo(
+                "Éxito",
+                f"Escaneo terminado.\nGaps detectados: {len(gaps)}\n\n"
+                f"Reporte guardado en:\n{carpeta}",
+            )
 
         except Exception as e:
             self.lbl_estado.config(text="Error en el escaneo", fg="#ff4444")
-            messagebox.showerror("Error", str(e))
+            messagebox.showerror(
+                "Error",
+                f"Ocurrió un error:\n\n{str(e)}\n\n"
+                f"Asegúrate de estar ejecutando desde la carpeta del proyecto.",
+            )
 
     def _cargar_historial(self):
         self.lista_historial.delete(0, tk.END)
-        escaneos = listar_escaneos(HISTORIAL_DIR)
-        for e in escaneos:
-            texto = f"{e['fecha']} | {e['total_gaps']} gaps | {e['carpeta']}"
-            self.lista_historial.insert(tk.END, texto)
+        try:
+            escaneos = listar_escaneos(HISTORIAL_DIR)
+            for e in escaneos:
+                texto = f"{e['fecha']} | {e['total_gaps']} gaps | {e['carpeta']}"
+                self.lista_historial.insert(tk.END, texto)
+        except Exception as e:
+            self.lbl_estado.config(text="Error cargando historial", fg="#ff4444")
+            messagebox.showerror("Error", f"No se pudo cargar el historial:\n{str(e)}")
 
     def _ver_reporte(self):
         seleccion = self.lista_historial.curselection()
@@ -164,17 +190,26 @@ class AppThreatHunting:
             return
 
         indice = seleccion[0]
-        escaneos = listar_escaneos(HISTORIAL_DIR)
-        escaneo = escaneos[indice]
-        ruta_html = escaneo["ruta_html"]
+        try:
+            escaneos = listar_escaneos(HISTORIAL_DIR)
+            escaneo = escaneos[indice]
+            ruta_html = escaneo["ruta_html"]
 
-        if os.path.exists(ruta_html):
-            webbrowser.open(f"file://{ruta_html}")
-        else:
-            messagebox.showerror("Error", "No se encontró el archivo reporte.html")
+            if os.path.exists(ruta_html):
+                webbrowser.open(f"file://{ruta_html}")
+            else:
+                messagebox.showerror("Error", "No se encontró el archivo reporte.html")
+        except Exception as e:
+            messagebox.showerror("Error", f"No se pudo abrir el reporte:\n{str(e)}")
 
 
 if __name__ == "__main__":
-    root = tk.Tk()
-    app = AppThreatHunting(root)
-    root.mainloop()
+    try:
+        root = tk.Tk()
+        app = AppThreatHunting(root)
+        root.mainloop()
+    except Exception as e:
+        # Si falla algo crítico, mostrar consola de error en Windows
+        import traceback
+        traceback.print_exc()
+        input("\nPresiona Enter para salir...")
