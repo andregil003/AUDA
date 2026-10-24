@@ -1,0 +1,12 @@
+{
+  "empresa": "Empresa demo GT",
+  "simulado": true,
+  "dispositivos": [
+    {"nombre": "FW-Central", "ip": "192.0.2.10", "producto": "PAN-OS", "version": "11.1.2-h2", "globalprotect": true, "internet": true, "responsable": "Redes", "rol": "VPN corporativa"},
+    {"nombre": "FW-Sucursal", "ip": "192.0.2.20", "producto": "PAN-OS", "version": "10.2.9", "globalprotect": true, "internet": false, "responsable": "Infraestructura", "rol": "Acceso de sucursal"},
+    {"nombre": "FW-Respaldo", "ip": "192.0.2.30", "producto": "PAN-OS", "version": "11.1.2-h3", "globalprotect": true, "internet": false, "responsable": "Redes", "rol": "Contingencia"},
+    {"nombre": "FW-Laboratorio", "ip": "192.0.2.40", "producto": "PAN-OS", "version": "11.0.4", "globalprotect": false, "internet": false, "responsable": "TI", "rol": "Laboratorio"},
+    {"nombre": "PC-Contabilidad", "ip": "192.0.2.50", "producto": "Windows 11", "version": "23H2", "globalprotect": false, "internet": false, "responsable": "Soporte", "rol": "Estación de trabajo"},
+    {"nombre": "FW-Pendiente", "ip": "192.0.2.60", "producto": "PAN-OS", "version": null, "globalprotect": true, "internet": true, "responsable": "Redes", "rol": "Inventario incompleto"}
+  ]
+}

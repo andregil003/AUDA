@@ -1,0 +1,17 @@
+{
+  "url": "https://security.paloaltonetworks.com/CVE-2024-3400",
+  "titulo": "CVE-2024-3400 · Inyección de comandos en GlobalProtect",
+  "editor": "Palo Alto Networks · Security Advisory",
+  "publicado": "2024-04-12",
+  "actualizado": "2024-05-03",
+  "verificado": "2026-10-24",
+  "cve": "CVE-2024-3400",
+  "cvss": "10.0",
+  "resumen": "El aviso describe ejecución remota sin autenticación en determinadas versiones de PAN-OS con portal o gateway GlobalProtect habilitado. El fabricante documentó explotación real. Este caso histórico es la referencia verificable del demo.",
+  "pasos": [
+    {"titulo": "Confirmar exposición", "detalle": "Validar versión y configuración de GlobalProtect en los firewalls señalados. Priorizar los accesibles desde internet.", "responsable": "Redes", "prioridad": "Primero"},
+    {"titulo": "Conservar evidencia", "detalle": "Recopilar un archivo de soporte TSF antes del reinicio. Revisar sesiones anómalas en gpsvc.log y correlacionar indicios antes de concluir compromiso.", "responsable": "SOC", "prioridad": "Antes del cambio"},
+    {"titulo": "Aplicar la corrección", "detalle": "Actualizar a una versión corregida y soportada siguiendo el aviso oficial. Los mínimos históricos indicados no sustituyen la ruta de actualización del fabricante.", "responsable": "Infraestructura", "prioridad": "Prioritario"},
+    {"titulo": "Verificar y cerrar", "detalle": "Actualizar el inventario y reevaluar. Ante indicios de compromiso, escalar al fabricante; un parche no demuestra que se eliminó una intrusión.", "responsable": "SOC + Redes", "prioridad": "Después del cambio"}
+  ]
+}
