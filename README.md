@@ -1,6 +1,8 @@
 # auda
 
-Panel para evaluar el equipo donde se ejecuta Python y generar reportes con evidencia y planes para agentes.
+AUDA ayuda al SOC a relacionar noticias y vulnerabilidades recientes con sus sistemas y priorizar la respuesta. El panel actual evalúa el equipo donde se ejecuta Python y genera reportes con evidencia y pasos para el SOC; los agentes pueden consultarlos mediante MCP o la API local.
+
+El objetivo es reducir la revisión manual de avisos, identificar los equipos afectados y entregar acciones concretas para resolver los gaps. La evaluación del host y las fuentes oficiales descritas aquí son el flujo principal de `run.py`. El inventario de empresa y la interfaz de escritorio en `gui/soc_panel.py` se conservan como un flujo separado con datos locales.
 
 ## Ejecutar
 

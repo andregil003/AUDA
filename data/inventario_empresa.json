@@ -1,0 +1,24 @@
+{
+  "empresa": "Mi Empresa S.A.",
+  "pais": "Guatemala",
+  "sistemas": [
+    {
+      "nombre": "Servidor-Web-01",
+      "sistema_operativo": "Ubuntu Server 20.04",
+      "software_instalado": ["Apache Log4j 2.14.1", "Java 11", "Nginx"],
+      "rol": "servidor_web"
+    },
+    {
+      "nombre": "App-Server-01",
+      "sistema_operativo": "Windows Server 2019",
+      "software_instalado": ["Apache Log4j 2.16.0", "Java 8", "Tomcat"],
+      "rol": "servidor_aplicacion"
+    },
+    {
+      "nombre": "PC-Admin-01",
+      "sistema_operativo": "Windows 10",
+      "software_instalado": ["Adobe Reader 11", "Java 8"],
+      "rol": "estacion_trabajo"
+    }
+  ]
+}
